@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Local cache (the verifier caches at ~/.cache/idea_verify_claim/; this is
+# a defensive guard in case anything writes to a project-local cache)
+.cache/
+
+# Empty workspace dir reserved for adjacent experiments
+/tom/

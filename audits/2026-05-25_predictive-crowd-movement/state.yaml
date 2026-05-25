@@ -1,0 +1,39 @@
+slug: predictive-crowd-movement
+geo: EU27
+depth: deep
+created: 2026-05-25T12:46:56+02:00
+last_updated: 2026-05-25T12:46:56+02:00
+wizard_version: phase-A
+checkpoints: on
+pre_register: on
+seed: "predictive crowd movement - tourist flow, protests, football games, business opportunities for shops stores etc pedestrian movement prediction"
+steps:
+  - { n: 1, name: seed, status: done, at: 2026-05-25T12:46:56+02:00 }
+  - { n: 2, name: clarify, status: done, at: 2026-05-25T12:48:00+02:00, flags: ["CLARIFICATION-INSUFFICIENT:pain"] }
+  - { n: 3, name: falsify, status: done, at: 2026-05-25T12:50:00+02:00, kill_conditions: 7, fatal: 3, blocker: 2, risk: 2 }
+  - { n: 4, name: triage, status: stub-skipped, kill_signal: false, at: 2026-05-25T12:51:00+02:00 }
+  - { n: 5, name: market, status: done, at: 2026-05-25T13:10:00+02:00, sources: 40, citations: 46, estimates: 21, regex_audit: passed, tags_added: { FATAL: 1, BLOCKER: 3, RISK: 2, ADVANTAGE: 1 } }
+  - { n: 6, name: competition, status: stub-skipped, at: 2026-05-25T13:11:00+02:00, note: "Partial substitute in 03_market.md §6" }
+  - { n: 7, name: customer, status: stub-skipped, at: 2026-05-25T13:11:00+02:00 }
+  - { n: 8, name: regulatory, status: stub-skipped, at: 2026-05-25T13:11:00+02:00, note: "Partial AI Act check in 03_market.md headline row" }
+  - { n: 9, name: technical, status: stub-skipped, at: 2026-05-25T13:11:00+02:00 }
+  - { n: 10, name: business, status: stub-skipped, at: 2026-05-25T13:11:00+02:00, note: "Partial procurement-timeline evidence in 03_market.md §7" }
+  - { n: 11, name: redteam, status: stub-skipped, at: 2026-05-25T13:11:00+02:00 }
+  - { n: 12, name: verdict, status: done, at: 2026-05-25T13:20:00+02:00, verdict: NO_GO, confidence: med, rubric_trigger: "FATAL>=1 not refuted in writing (Phase A red-team stubbed)" }
+running_tags: { FATAL: 1, BLOCKER: 3, RISK: 2, ADVANTAGE: 1 }
+provisional_verdict: NO_GO_OR_PIVOT
+provisional_confidence: medium
+final_verdict: NO_GO
+final_confidence: med
+final_at: 2026-05-25T13:20:00+02:00
+verdict_synthesizer_dispatch: "fallback via general-purpose agent — verdict-synthesizer.md exists on disk but not registered in runtime"
+user_context_injected:
+  - step: 1
+    at: 2026-05-25T12:47:30+02:00
+    answers:
+      primary_product: "All three (composite platform) — auditor split into MVP wedge=event-day forecasting + long-term composite narrative"
+      geography: "EU27"
+      pain: "Not sure — auditor probes; flagged [CLARIFICATION-INSUFFICIENT]"
+      mvp_scope: "Dashboard + forecast API for 1 city"
+flags:
+  multi_product_seed: true   # seed mixes ≥2 distinct products; Step 2 must collapse to one
