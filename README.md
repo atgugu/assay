@@ -23,30 +23,26 @@ Given a seed like
 - **Calibration check** against a running ledger of prior audits (`audits/_calibration.jsonl`)
 - **Funding research** (Phase C, `GO`/`PIVOT` only) — a named-entity registry across 4 avenues: grants · angels · VCs · anchor procurement
 
-Sample scorecard (real output, abridged from `audits/2026-05-25_predictive-crowd-movement/10_verdict.md`):
+Sample scorecard — the real rows from `audits/2026-05-25_predictive-crowd-movement/10_verdict.md`, abridged.
+**This is an early partial run** (7 of 12 steps were stubs, so no unit economics, customer or red-team evidence) and it was
+judged on venture-style thresholds, not on the L1 default described below. Treat it as a format demo, not a model verdict:
 
 ```
-═══════════════════════════════════════════════════════════════════════════
-SCORECARD — predictive-crowd-movement · 2026-05-25 · scale: L1 · geo: EU27
-═══════════════════════════════════════════════════════════════════════════
-VERDICT:         NO_GO                                Confidence: med
-─────────────────────────────────────────────────────────────────────────────
+VERDICT:         NO_GO                                  Confidence: med
 LOAD-BEARING KPIs
-  SAM EU27 (post-CoVe)        €33M       ≥ €80M floor    [FATAL]
-  Why-now trigger             collapsed  required        [BLOCKER]
-  WTP vs build cost           1.2×       ≥ 3× required   [BLOCKER]
-  CAC payback                 27 mo      < 24 mo         [BLOCKER]
-  Top-3 competitor share      62%        < 70% OK        [RISK]
-  ...                                                    ...
-─────────────────────────────────────────────────────────────────────────────
+  SAM 5-yr (wedge, post-CoVe)        €33M/yr (range €22–58M)         ≥€80M FATAL-1 threshold      [FATAL]
+  B2G procurement to first pilot     12–24 mo realistic              ≤9 mo BLOCKER-4 threshold    [BLOCKER]
+  "Why now?" verified triggers       0/3 survive primary check       ≥1 strong leg required       [BLOCKER]
+  EU AI Act Annex III class          borderline §5(d)                clean exemption required     [BLOCKER]
+  EU seed/Series-A ≥€5M in wedge     1 hit (Liftango, AU-HQ)         ≥3 EU-HQ rounds              [RISK]
+  ...
 TAG TALLY     FATAL: 1   BLOCKER: 3   RISK: 2   ADVANTAGE: 1
-RUBRIC        ≥1 FATAL not refuted by red-team ⇒ NO_GO
-CHEAPEST EXPERIMENT  5–8 outbound calls to event-cancellation underwriters
-                     at Munich Re / Swiss Re / Allianz GCS · <€500 + 8h
-                     founder time · 2–3 weeks. ≥3 carriers at ≥€500k/yr
-                     ⇒ PIVOT to insurance-data-feed wedge.
-═══════════════════════════════════════════════════════════════════════════
 ```
+
+Known problems in that example, found in review (a rebuild is in progress): the €80M floor is a VC-scale threshold that
+`CLAUDE.md` itself calls a false-negative trap at L1; the deterministic verifier below was written after this audit ran, so
+its claims were not machine-checked; the headline SAM was corrected from €78M to €33M by the model re-adding its own numbers,
+and the text still contains stale figures; and the tag tally was applied by an LLM, not by code.
 
 ---
 
@@ -55,7 +51,7 @@ CHEAPEST EXPERIMENT  5–8 outbound calls to event-cancellation underwriters
 Anti-bullshit discipline is enforced **mechanically**, not stylistically.
 
 - **Source Protocol** — every major numeric claim has ≥5 cited sources (≥2 primary), every URL is WebFetch-verified with an access date, and every TAM/SAM/SOM shows the bottom-up arithmetic (`N_buyers × ARPU × penetration`).
-- **Deterministic claim grounding** — `.claude/lib/verify_claim.py` runs as a subprocess regex check on every load-bearing numeric claim. The LLM cannot self-grade — the regex engine does. `NUMBER_MISSING` forces an `[ESTIMATE]` flag; the agent is re-invoked. Closes the verification-gap category from MAST (NeurIPS 2025, 21% of multi-agent failures).
+- **Deterministic claim grounding** — `.claude/lib/verify_claim.py` runs as a subprocess regex check on every load-bearing numeric claim. The LLM cannot self-grade — the regex engine does. `NUMBER_MISSING` forces an `[ESTIMATE]` flag; the agent is re-invoked. Closes the verification-gap category from MAST (NeurIPS 2025, 21% of multi-agent failures). *(Design intent: see "The verifier" below for what currently works and what does not.)*
 - **Cross-step numeric reconciliation** — CAC, ARPU, build-cost have to agree across agents within 2×, else a `[RECONCILE]` flag downgrades the synthesizer's confidence.
 - **Banned-language regex audit** — re-invokes the agent if the artifact contains vague phrases (`huge market`, `AI-powered` as differentiation, `studies show` without URL, …).
 - **5 anti-confirmation-bias closing blocks** in every research artifact — negative results, named analogs, inverse falsifier, confidence diary, CoVe verification log.
@@ -97,27 +93,21 @@ Common flags: `--scale=L1|L2|L3` · `--geo=EU27|DE|FR|+US|global` · `--depth=qu
 
 ---
 
-## The verifier (concrete example)
+## The verifier
 
-A single subprocess call that grounds a numeric claim against a real URL:
+`.claude/lib/verify_claim.py` checks a numeric claim against a fetched page by regex and returns one JSON line:
 
 ```bash
-$ python3 .claude/lib/verify_claim.py \
-    --claim "Anthropic was founded in 2021" \
-    --url   "https://en.wikipedia.org/wiki/Anthropic" \
-    --context "Anthropic,founded"
+python3 .claude/lib/verify_claim.py --self-test      # offline, 20 built-in cases
+python3 .claude/lib/verify_claim.py --claim "<text>" --url "<src>" --context "<comma,separated,terms>"
 ```
 
-```json
-{"status":"VERIFIED",
- "claim_value":2021,
- "matched_value":2021,
- "matched_span":"...artificial intelligence company Anthropic ... Founded 2021 ; 5 years ago...",
- "context_terms_found":["Anthropic","founded"],
- "delta_pct":0.0}
-```
+Statuses: `VERIFIED` · `VERIFIED_FUZZY` (≤5% delta) · `NUMBER_MISSING` · `FETCH_FAILED` · `PAYWALLED` · `JS_REQUIRED` · `NO_CLAIM_NUMBER`.
+Disk-cached 24 h at `~/.cache/idea_verify_claim/`. Handles currency, magnitude suffixes (k / M / B / Mio / Mrd …), percent, and EU vs US separators.
 
-Statuses returned: `VERIFIED` · `VERIFIED_FUZZY` (≤5% delta) · `NUMBER_MISSING` · `FETCH_FAILED` · `PAYWALLED` · `JS_REQUIRED` · `NO_CLAIM_NUMBER`. Disk-cached 24 h at `~/.cache/idea_verify_claim/`. Handles currency (€/$/£/¥), magnitude suffixes (k / M / B / Mio / Mrd / Millionen / million / …), percent (`%` / `‰` / `percent`), and EU vs US decimal/thousands separators. See the module docstring for the full schema.
+**Known limitations (honest status):** bare integers of 4+ digits without a magnitude or currency are mis-parsed (`2021` reads as 202);
+a single context word within ±200 characters is enough to pass, so a nearby unrelated number can verify; an empty `--context`
+matches any equal number; and the wizard is not currently permitted to run Python, so the example audit was not machine-verified.
 
 ---
 
@@ -186,11 +176,11 @@ README.md             — this file
 
 ## Example audit included
 
-`audits/2026-05-25_predictive-crowd-movement/` contains a real Phase-A run on the seed *"predictive crowd movement — tourist flow, protests, football games"* that ended in `NO_GO` at L1. Worth reading:
+`audits/2026-05-25_predictive-crowd-movement/` contains a real Phase-A run on the seed *"predictive crowd movement — tourist flow, protests, football games"* that ended in `NO_GO` (judged on venture-style thresholds, not L1; 7 of 12 steps were stubs). Worth reading:
 
 - `00_seed.md` — what a seed looks like after the wizard's clarification pass
 - `01b_falsifier.md` — pre-registered kill criteria, written before research starts
-- `03_market.md` — full TAM/SAM/SOM with bottom-up math and ≥10 cited sources
+- `03_market.md` — TAM/SAM/SOM with bottom-up math; every input to the €33M SAM is an estimate, anchored to cited sources (see the verdict's known problems above)
 - `10_verdict.md` — the SCORECARD, plus the < €5k discriminating experiment that would change the verdict (a pivot to insurance-data-feed wedge)
 - `sources.md` — every URL, access date, primary/secondary tag, fetch-status
 
